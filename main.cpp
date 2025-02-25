@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     // expose C++ object to qml
-    CTcpConHandler tcpClientConHandler;
+    CTcpConHandler tcpClientConHandler(nullptr);
     engine.rootContext()->setContextProperty("tcpClientConHandler", &tcpClientConHandler);
     CTcpClient tcpClient(nullptr, tcpClientConHandler);
     engine.rootContext()->setContextProperty("tcpClient", &tcpClient);

@@ -2,7 +2,7 @@
 #include "tcpclient.h"
 
 CTcpConHandler::CTcpConHandler(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_pSocket{nullptr}
 {}
 
 QString CTcpConHandler::isConnected()
@@ -18,30 +18,36 @@ void CTcpConHandler::setConnection(const QString &connStr)
     if (strList.size() == 1 && strList[0] == "Disconnect")
     {
         qDebug() << "Disconnecting";
-        if (m_pSocket->isOpen())
+        if (m_pSocket != nullptr)
         {
             m_pSocket->disconnectFromHost();
+            bool isConnected = (m_pSocket->state() == QTcpSocket::ConnectedState);
+            m_IsConnected = (isConnected == true) ? "yes" : "no";
+            delete m_pSocket;
+            m_pSocket = nullptr;
+            emit connectionChanged(isConnected);
         }
-        m_Status = ConnectionStatusE::DISCONNECTED;
     }
     else if (strList.size() == 3 && strList[0] == "Connect")
     {
         if (m_IpAddress.setAddress(strList[1]))
         {
             m_PortNumber = static_cast<quint16>(strList[2].toInt());
-            qDebug() << "Everything is ok! We can connect";
-            // Establish connection. Only then change the status
-            // to connected
+
             m_pSocket = new QTcpSocket();
             m_pSocket->connectToHost(m_IpAddress, m_PortNumber);
+            m_pSocket->waitForConnected(1000);
+
+            bool isConnected = (m_pSocket->state() == QTcpSocket::ConnectedState);
+            if (!isConnected)
+            {
+                delete m_pSocket;
+                m_pSocket = nullptr;
+            }
+            m_IsConnected = (isConnected == true) ? "yes" : "no";
+            emit connectionChanged(isConnected);
         }
-
-        m_Status = ConnectionStatusE::CONNECTED;
-
     }
-
-
-    emit connectionChanged();
 }
 
 QTcpSocket *CTcpConHandler::GetSocket()
@@ -85,6 +91,8 @@ void CTcpClient::writeTcp(const QString &data)
 
 
     QByteArray dataBytes = dataOut.toLocal8Bit();
-    m_ConHandler.GetSocket()->write(dataBytes);
-    qDebug() << dataOut;
+    if (m_ConHandler.GetSocket() != nullptr)
+    {
+        m_ConHandler.GetSocket()->write(dataBytes);
+    }
 }

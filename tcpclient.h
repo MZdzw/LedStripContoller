@@ -6,10 +6,6 @@
 #include <QTcpSocket>
 #include <qqml.h>
 
-enum class ConnectionStatusE
-{
-    CONNECTED, DISCONNECTED
-};
 
 class CTcpConHandler : public QObject
 {
@@ -18,16 +14,15 @@ class CTcpConHandler : public QObject
     Q_PROPERTY(QString connect READ isConnected WRITE setConnection NOTIFY connectionChanged)
 
 public:
-    explicit CTcpConHandler(QObject *parent = nullptr);
+    explicit CTcpConHandler(QObject *parent);
 
     QString isConnected();
     void setConnection(const QString& connStr);
     QTcpSocket* GetSocket();
 signals:
-    void connectionChanged();
+    void connectionChanged(bool isConntected);
 
 private:
-    ConnectionStatusE m_Status;
     QString m_IsConnected;
     QHostAddress m_IpAddress;
     quint16 m_PortNumber;

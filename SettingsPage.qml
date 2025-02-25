@@ -10,8 +10,6 @@ Item {
         id: rectangle
         color: "#232f4f"
         anchors.fill: parent
-        // Material.theme: Material.Dark
-        // Material.accent: Material.Purple
 
         Label
         {
@@ -84,6 +82,48 @@ Item {
                 tcpClientConHandler.connect = text
             }
         }
+        CheckBox
+        {
+            id: connectionStatus
+            text: qsTr("Not Connected")
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: commandField.top
+            anchors.bottomMargin: 50
+            height: 60
+            font.pixelSize: height
+            indicator.width: height
+            indicator.height: height
+            checked: false
+            enabled: false
+            contentItem: Text
+            {
+                text: parent.text
+                color: (connectionStatus.text === "Connected") ? "green" : "red"
+                font: parent.font
+                verticalAlignment: Text.AlignVCenter
+                anchors.left: parent.indicator.right
+                anchors.leftMargin: 8
+            }
+            Connections
+            {
+                target: tcpClientConHandler
+                onConnectionChanged: (isConnected) =>
+                {
+                    if (isConnected)
+                    {
+                        connectionStatus.text = "Connected"
+                        connectionStatus.checked = true
+                    }
+                    else
+                    {
+                        connectionStatus.text = "Disconnected"
+                        connectionStatus.checked = false
+                    }
+                }
+            }
+
+        }
+
         Button
         {
             id: sendRawCommand
